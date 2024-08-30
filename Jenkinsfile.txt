@@ -52,16 +52,16 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            mail to: 'developer@example.com',
-                 subject: "Pipeline Success",
-                 body: "The pipeline has completed successfully."
-        }
-        failure {
-            mail to: 'developer@example.com',
-                 subject: "Pipeline Failed",
-                 body: "The pipeline has failed. Please check the logs."
-        }
+   post {
+    success {
+        mail to: 'dasankalana3@gmail.com',
+             subject: "Pipeline Success",
+             body: "The pipeline has completed successfully."
     }
+    failure {
+        mail to: 'dasankalana3@gmail.com',
+             subject: "Pipeline Failed",
+             body: "The pipeline has failed. Please check the logs."
+    }
+}
 }
