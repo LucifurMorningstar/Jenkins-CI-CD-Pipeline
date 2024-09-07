@@ -1,6 +1,11 @@
 pipeline {
     agent any
     
+    environment {
+        // Define Maven home if it's not set globally in Jenkins
+        MAVEN_HOME = 'C:/path/to/maven'  // Adjust this path to where Maven is installed
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -11,30 +16,28 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the code using Maven...'
-                bat 'mvn clean install'
+                bat '"%MAVEN_HOME%/bin/mvn" clean install'
             }
         }
         
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running Unit and Integration Tests with JUnit...'
-                bat 'mvn test'
+                bat '"%MAVEN_HOME%/bin/mvn" test'
             }
         }
         
         stage('Code Analysis') {
             steps {
                 echo 'Analyzing code with SonarQube...'
-                // Adjust according to your SonarQube setup
-                bat 'mvn sonar:sonar'
+                bat '"%MAVEN_HOME%/bin/mvn" sonar:sonar'
             }
         }
         
         stage('Security Scan') {
             steps {
                 echo 'Performing security scan with OWASP Dependency Check...'
-                // Adjust according to your OWASP Dependency Check setup
-                bat 'mvn dependency-check:check'
+                bat '"%MAVEN_HOME%/bin/mvn" dependency-check:check'
             }
         }
         
