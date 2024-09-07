@@ -1,79 +1,157 @@
 pipeline {
     agent any
-
     environment {
-        EMAIL_RECIPIENT = 'dasankalana3@gmail.com'
+        // Define environment variables here if needed
     }
-
     stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    try {
+                        // Checkout the code from GitHub
+                        checkout([$class: 'GitSCM',
+                                  branches: [[name: '*/main']],
+                                  userRemoteConfigs: [[url: 'https://github.com/LucifurMorningstar/Jenkins-CI-CD-Pipeline.git']]
+                        ])
+                    } catch (Exception e) {
+                        echo "Checkout failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
+            }
+        }
         stage('Build') {
             steps {
-                // Replace with your build commands, e.g., Maven or Gradle
-                echo 'Building the code...'
-                sh './build.sh'  // Example build script
+                script {
+                    try {
+                        // Build the project (use 'sh' for Unix-like systems or 'bat' for Windows)
+                        sh 'echo Building the code...' // Replace with your actual build command
+                    } catch (Exception e) {
+                        echo "Build failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Unit and Integration Tests') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your test commands, e.g., JUnit, TestNG
-                echo 'Running unit and integration tests...'
-                sh './run-tests.sh'  // Example test script
+                script {
+                    try {
+                        // Run unit and integration tests
+                        sh 'echo Running tests...' // Replace with your actual test command
+                    } catch (Exception e) {
+                        echo "Tests failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Code Analysis') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your code analysis tool, e.g., SonarQube
-                echo 'Performing code analysis...'
-                sh './code-analysis.sh'  // Example code analysis script
+                script {
+                    try {
+                        // Perform code analysis
+                        sh 'echo Performing code analysis...' // Replace with your actual analysis command
+                    } catch (Exception e) {
+                        echo "Code analysis failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Security Scan') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your security scan tool, e.g., OWASP ZAP
-                echo 'Performing security scan...'
-                sh './security-scan.sh'  // Example security scan script
+                script {
+                    try {
+                        // Perform security scan
+                        sh 'echo Performing security scan...' // Replace with your actual scan command
+                    } catch (Exception e) {
+                        echo "Security scan failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Deploy to Staging') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your deployment commands to staging server
-                echo 'Deploying to staging server...'
-                sh './deploy-staging.sh'  // Example deployment script
+                script {
+                    try {
+                        // Deploy to staging environment
+                        sh 'echo Deploying to staging...' // Replace with your actual deploy command
+                    } catch (Exception e) {
+                        echo "Deployment to staging failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Integration Tests on Staging') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your integration test commands for staging
-                echo 'Running integration tests on staging...'
-                sh './integration-tests-staging.sh'  // Example integration tests script
+                script {
+                    try {
+                        // Run integration tests on staging
+                        sh 'echo Running integration tests on staging...' // Replace with your actual test command
+                    } catch (Exception e) {
+                        echo "Integration tests on staging failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
         stage('Deploy to Production') {
+            when {
+                expression { currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                // Replace with your deployment commands to production server
-                echo 'Deploying to production server...'
-                sh './deploy-production.sh'  // Example deployment script
+                script {
+                    try {
+                        // Deploy to production environment
+                        sh 'echo Deploying to production...' // Replace with your actual deploy command
+                    } catch (Exception e) {
+                        echo "Deployment to production failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
             }
         }
     }
-
     post {
         always {
             script {
-                def buildLog = currentBuild.rawBuild.getLog(100) // Adjust the number of lines as needed
-                def emailSubject = "Build ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}"
-                def emailBody = """\
-                    Build ${currentBuild.fullDisplayName} has finished with status ${currentBuild.currentResult}.
-                    Please find the attached logs for details.
-                    """
-
-                emailext (
-                    to: "${EMAIL_RECIPIENT}",
-                    subject: emailSubject,
-                    body: emailBody,
-                    attachLog: true,  // Attach the build log
-                    attachBuildLog: true  // Attach the build log
-                )
+                // Send email notifications
+                try {
+                    emailext (
+                        subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
+                        body: "Build URL: ${env.BUILD_URL}",
+                        to: 'dasankalana3@gmai.com',
+                        attachmentsPattern: '**/logs/*.log'
+                    )
+                } catch (Exception e) {
+                    echo "Failed to send email: ${e.getMessage()}"
+                }
             }
         }
     }
