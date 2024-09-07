@@ -1,91 +1,93 @@
 pipeline {
     agent any
+    
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
         stage('Build') {
             steps {
-                script {
-                    echo 'Building the code using Maven...'
-                    // Example: sh 'mvn clean package'
-                }
+                echo 'Building the code using Maven...'
+                bat 'mvn clean install'
             }
         }
+        
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    echo 'Running Unit and Integration Tests with JUnit...'
-                    // Example: sh 'mvn test'
-                }
+                echo 'Running Unit and Integration Tests with JUnit...'
+                bat 'mvn test'
             }
         }
+        
         stage('Code Analysis') {
             steps {
-                script {
-                    echo 'Analyzing code with SonarQube...'
-                    // Example: sh 'sonar-scanner'
-                }
+                echo 'Analyzing code with SonarQube...'
+                // Adjust according to your SonarQube setup
+                bat 'mvn sonar:sonar'
             }
         }
+        
         stage('Security Scan') {
             steps {
-                script {
-                    echo 'Performing security scan with OWASP Dependency Check...'
-                    // Example: sh 'dependency-check'
-                }
+                echo 'Performing security scan with OWASP Dependency Check...'
+                // Adjust according to your OWASP Dependency Check setup
+                bat 'mvn dependency-check:check'
             }
         }
+        
         stage('Deploy to Staging') {
             steps {
-                script {
-                    echo 'Deploying to Staging Server...'
-                    // Example: sh 'scp target/myapp.jar user@staging-server:/apps/'
-                }
+                echo 'Deploying to Staging Server...'
+                // Add your deployment script here
             }
         }
+        
         stage('Integration Tests on Staging') {
             steps {
-                script {
-                    echo 'Running Integration Tests on Staging...'
-                    // Example: sh './run-integration-tests.sh'
-                }
+                echo 'Running Integration Tests on Staging...'
+                // Add your integration test script here
             }
         }
+        
         stage('Deploy to Production') {
             steps {
-                script {
-                    echo 'Deploying to Production Server...'
-                    // Example: sh 'scp target/myapp.jar user@production-server:/apps/'
-                }
+                echo 'Deploying to Production Server...'
+                // Add your production deployment script here
             }
         }
+        
         stage('List Workspace Files') {
             steps {
-                script {
-                    sh 'ls -R' // For Unix-based systems
-                    // or
-                    bat 'dir /S' // For Windows systems
-                }
+                echo 'Listing workspace files...'
+                bat 'dir'
             }
         }
     }
+    
     post {
         always {
-            // Archive logs for the email
-            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/*.jar', allowEmptyArchive: true
+            echo 'Archiving artifacts'
         }
-        success {
-            emailext (
+        
+        failure {
+            emailext(
                 to: 'dasankalana3@gmail.com',
-                subject: "Pipeline Success",
-                body: "The pipeline has completed successfully.",
-                attachmentsPattern: '**/*.log' // Attach logs
+                subject: 'Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
+                body: "The build failed. Check console output at ${env.BUILD_URL}",
+                attachLog: true
             )
         }
-        failure {
-            emailext (
+        
+        success {
+            emailext(
                 to: 'dasankalana3@gmail.com',
-                subject: "Pipeline Failed",
-                body: "The pipeline has failed. Please check the logs.",
-                attachmentsPattern: '**/*.log' // Attach logs
+                subject: 'Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
+                body: "The build was successful. Check console output at ${env.BUILD_URL}",
+                attachLog: true
             )
         }
     }
