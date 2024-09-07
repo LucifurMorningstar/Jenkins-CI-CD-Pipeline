@@ -1,67 +1,79 @@
 pipeline {
     agent any
-
     stages {
         stage('Build') {
             steps {
-                echo 'Building the code using Maven...'
-                // Example: sh 'mvn clean package'
+                script {
+                    echo 'Building the code using Maven...'
+                    // Example: sh 'mvn clean package'
+                }
             }
         }
-
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running Unit and Integration Tests with JUnit...'
-                // Example: sh 'mvn test'
+                script {
+                    echo 'Running Unit and Integration Tests with JUnit...'
+                    // Example: sh 'mvn test'
+                }
             }
         }
-
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code with SonarQube...'
-                // Example: sh 'sonar-scanner'
+                script {
+                    echo 'Analyzing code with SonarQube...'
+                    // Example: sh 'sonar-scanner'
+                }
             }
         }
-
         stage('Security Scan') {
             steps {
-                echo 'Performing security scan with OWASP Dependency Check...'
-                // Example: sh 'dependency-check'
+                script {
+                    echo 'Performing security scan with OWASP Dependency Check...'
+                    // Example: sh 'dependency-check'
+                }
             }
         }
-
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to Staging Server...'
-                // Example: sh 'scp target/myapp.jar user@staging-server:/apps/'
+                script {
+                    echo 'Deploying to Staging Server...'
+                    // Example: sh 'scp target/myapp.jar user@staging-server:/apps/'
+                }
             }
         }
-
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running Integration Tests on Staging...'
-                // Example: sh './run-integration-tests.sh'
+                script {
+                    echo 'Running Integration Tests on Staging...'
+                    // Example: sh './run-integration-tests.sh'
+                }
             }
         }
-
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to Production Server...'
-                // Example: sh 'scp target/myapp.jar user@production-server:/apps/'
+                script {
+                    echo 'Deploying to Production Server...'
+                    // Example: sh 'scp target/myapp.jar user@production-server:/apps/'
+                }
             }
         }
     }
-
-   post {
-    success {
-        mail to: 'dasankalana3@gmail.com',
-             subject: "Pipeline Success",
-             body: "The pipeline has completed successfully."
+    post {
+        always {
+            // Archive logs for the email
+            archiveArtifacts artifacts: '**/log/**/*.log', allowEmptyArchive: true
+        }
+        success {
+            mail to: 'dasankalana3@gmail.com',
+                 subject: "Pipeline Success",
+                 body: "The pipeline has completed successfully.",
+                 attachLog: true // Attach logs
+        }
+        failure {
+            mail to: 'dasankalana3@gmail.com',
+                 subject: "Pipeline Failed",
+                 body: "The pipeline has failed. Please check the logs.",
+                 attachLog: true // Attach logs
+        }
     }
-    failure {
-        mail to: 'dasankalana3@gmail.com',
-             subject: "Pipeline Failed",
-             body: "The pipeline has failed. Please check the logs."
-    }
-}
 }
