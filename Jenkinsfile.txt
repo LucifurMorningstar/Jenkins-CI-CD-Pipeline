@@ -1,97 +1,80 @@
 pipeline {
     agent any
-    
+
     environment {
-        // Define Maven home if it's not set globally in Jenkins
-        MAVEN_HOME = 'C:/path/to/maven'  // Adjust this path to where Maven is installed
+        EMAIL_RECIPIENT = 'dasankalana3@gmail.com'
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
         stage('Build') {
             steps {
-                echo 'Building the code using Maven...'
-                bat '"%MAVEN_HOME%/bin/mvn" clean install'
+                // Replace with your build commands, e.g., Maven or Gradle
+                echo 'Building the code...'
+                sh './build.sh'  // Example build script
             }
         }
-        
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running Unit and Integration Tests with JUnit...'
-                bat '"%MAVEN_HOME%/bin/mvn" test'
+                // Replace with your test commands, e.g., JUnit, TestNG
+                echo 'Running unit and integration tests...'
+                sh './run-tests.sh'  // Example test script
             }
         }
-        
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code with SonarQube...'
-                bat '"%MAVEN_HOME%/bin/mvn" sonar:sonar'
+                // Replace with your code analysis tool, e.g., SonarQube
+                echo 'Performing code analysis...'
+                sh './code-analysis.sh'  // Example code analysis script
             }
         }
-        
         stage('Security Scan') {
             steps {
-                echo 'Performing security scan with OWASP Dependency Check...'
-                bat '"%MAVEN_HOME%/bin/mvn" dependency-check:check'
+                // Replace with your security scan tool, e.g., OWASP ZAP
+                echo 'Performing security scan...'
+                sh './security-scan.sh'  // Example security scan script
             }
         }
-        
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to Staging Server...'
-                // Add your deployment script here
+                // Replace with your deployment commands to staging server
+                echo 'Deploying to staging server...'
+                sh './deploy-staging.sh'  // Example deployment script
             }
         }
-        
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running Integration Tests on Staging...'
-                // Add your integration test script here
+                // Replace with your integration test commands for staging
+                echo 'Running integration tests on staging...'
+                sh './integration-tests-staging.sh'  // Example integration tests script
             }
         }
-        
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to Production Server...'
-                // Add your production deployment script here
-            }
-        }
-        
-        stage('List Workspace Files') {
-            steps {
-                echo 'Listing workspace files...'
-                bat 'dir'
+                // Replace with your deployment commands to production server
+                echo 'Deploying to production server...'
+                sh './deploy-production.sh'  // Example deployment script
             }
         }
     }
-    
+
     post {
         always {
-            archiveArtifacts artifacts: '**/*.jar', allowEmptyArchive: true
-            echo 'Archiving artifacts'
-        }
-        
-        failure {
-            emailext(
-                to: 'dasankalana3@gmail.com',
-                subject: 'Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
-                body: "The build failed. Check console output at ${env.BUILD_URL}",
-                attachLog: true
-            )
-        }
-        
-        success {
-            emailext(
-                to: 'dasankalana3@gmail.com',
-                subject: 'Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
-                body: "The build was successful. Check console output at ${env.BUILD_URL}",
-                attachLog: true
-            )
+            script {
+                def buildLog = currentBuild.rawBuild.getLog(100) // Adjust the number of lines as needed
+                def emailSubject = "Build ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}"
+                def emailBody = """\
+                    Build ${currentBuild.fullDisplayName} has finished with status ${currentBuild.currentResult}.
+                    Please find the attached logs for details.
+                    """
+
+                emailext (
+                    to: "${EMAIL_RECIPIENT}",
+                    subject: emailSubject,
+                    body: emailBody,
+                    attachLog: true,  // Attach the build log
+                    attachBuildLog: true  // Attach the build log
+                )
+            }
         }
     }
 }
