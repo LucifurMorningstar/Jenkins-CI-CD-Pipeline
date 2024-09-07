@@ -64,16 +64,20 @@ pipeline {
             archiveArtifacts artifacts: '**/log/**/*.log', allowEmptyArchive: true
         }
         success {
-            mail to: 'dasankalana3@gmail.com',
-                 subject: "Pipeline Success",
-                 body: "The pipeline has completed successfully.",
-                 attachLog: true // Attach logs
+            emailext (
+                to: 'dasankalana3@gmail.com',
+                subject: "Pipeline Success",
+                body: "The pipeline has completed successfully.",
+                attachmentsPattern: '**/log/**/*.log' // Attach logs
+            )
         }
         failure {
-            mail to: 'dasankalana3@gmail.com',
-                 subject: "Pipeline Failed",
-                 body: "The pipeline has failed. Please check the logs.",
-                 attachLog: true // Attach logs
+            emailext (
+                to: 'dasankalana3@gmail.com',
+                subject: "Pipeline Failed",
+                body: "The pipeline has failed. Please check the logs.",
+                attachmentsPattern: '**/log/**/*.log' // Attach logs
+            )
         }
     }
 }
