@@ -57,6 +57,15 @@ pipeline {
                 }
             }
         }
+        stage('List Workspace Files') {
+            steps {
+                script {
+                    sh 'ls -R' // For Unix-based systems
+                    // or
+                    bat 'dir /S' // For Windows systems
+                }
+            }
+        }
     }
     post {
         always {
