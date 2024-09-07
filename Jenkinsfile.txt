@@ -1,157 +1,110 @@
 pipeline {
     agent any
+
     environment {
-        // Define environment variables here if needed
+        // Define email parameters
+        EMAIL_RECIPIENTS = 'dasankalana3@gmail.com'
+        EMAIL_SUBJECT_SUCCESS = 'Jenkins Pipeline Success Notification'
+        EMAIL_SUBJECT_FAILURE = 'Jenkins Pipeline Failure Notification'
+        EMAIL_BODY_SUCCESS = 'The Jenkins pipeline has successfully completed the stage: '
+        EMAIL_BODY_FAILURE = 'The Jenkins pipeline has failed at the stage: '
     }
+
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    try {
-                        // Checkout the code from GitHub
-                        checkout([$class: 'GitSCM',
-                                  branches: [[name: '*/main']],
-                                  userRemoteConfigs: [[url: 'https://github.com/LucifurMorningstar/Jenkins-CI-CD-Pipeline.git']]
-                        ])
-                    } catch (Exception e) {
-                        echo "Checkout failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
-                }
-            }
-        }
         stage('Build') {
             steps {
                 script {
-                    try {
-                        // Build the project (use 'sh' for Unix-like systems or 'bat' for Windows)
-                        sh 'echo Building the code...' // Replace with your actual build command
-                    } catch (Exception e) {
-                        echo "Build failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 1: Build'
+                    // Build automation tool example: Maven
+                    sh 'mvn clean install'
                 }
             }
         }
+
         stage('Unit and Integration Tests') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Run unit and integration tests
-                        sh 'echo Running tests...' // Replace with your actual test command
-                    } catch (Exception e) {
-                        echo "Tests failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 2: Unit and Integration Tests'
+                    // Unit testing example: JUnit
+                    sh 'mvn test'
+                    // Integration testing example: JUnit
+                    sh 'mvn verify'
                 }
             }
         }
+
         stage('Code Analysis') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Perform code analysis
-                        sh 'echo Performing code analysis...' // Replace with your actual analysis command
-                    } catch (Exception e) {
-                        echo "Code analysis failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 3: Code Analysis'
+                    // Code analysis tool example: SonarQube
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
+
         stage('Security Scan') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Perform security scan
-                        sh 'echo Performing security scan...' // Replace with your actual scan command
-                    } catch (Exception e) {
-                        echo "Security scan failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 4: Security Scan'
+                    // Security scan tool example: OWASP Dependency-Check
+                    sh 'dependency-check.sh --project my-project --out ./reports'
                 }
             }
         }
+
         stage('Deploy to Staging') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Deploy to staging environment
-                        sh 'echo Deploying to staging...' // Replace with your actual deploy command
-                    } catch (Exception e) {
-                        echo "Deployment to staging failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 5: Deploy to Staging'
+                    // Deployment tool example: AWS CLI
+                    sh 'aws deploy --application-name my-app --deployment-group-name staging-group'
                 }
             }
         }
+
         stage('Integration Tests on Staging') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Run integration tests on staging
-                        sh 'echo Running integration tests on staging...' // Replace with your actual test command
-                    } catch (Exception e) {
-                        echo "Integration tests on staging failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 6: Integration Tests on Staging'
+                    // Integration testing example: JUnit on staging environment
+                    sh 'mvn verify -Dtest=IntegrationTest'
                 }
             }
         }
+
         stage('Deploy to Production') {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 script {
-                    try {
-                        // Deploy to production environment
-                        sh 'echo Deploying to production...' // Replace with your actual deploy command
-                    } catch (Exception e) {
-                        echo "Deployment to production failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
+                    echo 'Stage 7: Deploy to Production'
+                    // Deployment tool example: AWS CLI
+                    sh 'aws deploy --application-name my-app --deployment-group-name production-group'
                 }
             }
         }
     }
+
     post {
-        always {
+        success {
             script {
-                // Send email notifications
-                try {
-                    emailext (
-                        subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
-                        body: "Build URL: ${env.BUILD_URL}",
-                        to: 'dasankalana3@gmai.com',
-                        attachmentsPattern: '**/logs/*.log'
-                    )
-                } catch (Exception e) {
-                    echo "Failed to send email: ${e.getMessage()}"
-                }
+                echo 'Pipeline succeeded'
+                // Send success email
+                emailext (
+                    subject: "${EMAIL_SUBJECT_SUCCESS} - ${currentBuild.currentResult}",
+                    body: "${EMAIL_BODY_SUCCESS} ${currentBuild.currentResult}",
+                    to: "${EMAIL_RECIPIENTS}"
+                )
+            }
+        }
+        failure {
+            script {
+                echo 'Pipeline failed'
+                // Send failure email
+                emailext (
+                    subject: "${EMAIL_SUBJECT_FAILURE} - ${currentBuild.currentResult}",
+                    body: "${EMAIL_BODY_FAILURE} ${currentBuild.currentResult}",
+                    to: "${EMAIL_RECIPIENTS}"
+                )
             }
         }
     }
