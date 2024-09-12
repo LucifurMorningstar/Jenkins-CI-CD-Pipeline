@@ -54,13 +54,13 @@ pipeline {
 		}
 		post {
 		    success {
-			emailext to: 'dasankalana3@gmail.com'
+			emailext to: 'dasankalana3@gmail.com',
 			    subject: "Pipeline - Security Scan SUCCESS: ${currentBuild.fullDisplayName}",
 			    body: "The security scan completed successfully. Please find the logs attached.",
 			    attachLog: true, compressLog: true
 		    }
 		    failure {
-			emailext to: 'dasankalana3@gmail.com'
+			emailext to: 'dasankalana3@gmail.com',
 			    subject: "Pipeline - Security Scan FAILURE: ${currentBuild.fullDisplayName}",
 			    body: "The security scan failed. Please find the logs attached.",
 			    attachLog: true, compressLog: true
@@ -84,13 +84,13 @@ pipeline {
 		}
 		post {
 		    success {
-			emailext to: 'dasankalana3@gmail.com'
+			emailext to: 'dasankalana3@gmail.com',
 			    subject: "Pipeline - Integration Tests on Staging SUCCESS: ${currentBuild.fullDisplayName}",
 			    body: "Integration tests on staging completed successfully. Please find the logs attached.",
 			    attachLog: true, compressLog: true
 		    }
 		    failure {
-			emailext to: 'dasankalana3@gmail.com'
+			emailext to: 'dasankalana3@gmail.com',
 			    subject: "Pipeline - Integration Tests on Staging FAILURE: ${currentBuild.fullDisplayName}",
 			    body: "Integration tests on staging failed. Please find the logs attached.",
 			    attachLog: true, compressLog: true
