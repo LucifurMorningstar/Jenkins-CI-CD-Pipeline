@@ -128,4 +128,12 @@ pipeline {
 
         failure {
             echo 'Build failed!'
+            emailext(
+                attachLog: true,
+                to: "dasankalana3@gmail.com",  // Fixed quote error here
+                subject: "FAILURE: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                body: "The pipeline failed. Please check the logs for details."
+            )
+        }
+    }
 }
