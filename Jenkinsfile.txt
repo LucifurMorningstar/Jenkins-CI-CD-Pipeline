@@ -5,13 +5,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project.'
-                echo 'mvn clean package'
+                sh 'mvn clean package' // Use 'sh' for running shell commands
+            }
         }
 
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running Unit and Integration Tests.'
-                echo 'mvn test'
+                sh 'mvn test'
             }
             post {
                 always {
@@ -28,7 +29,7 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Performing Code Analysis...'
-                echo 'sonar-scanner -Dsonar.projectKey=my_project -Dsonar.sources=src'
+                sh 'sonar-scanner -Dsonar.projectKey=my_project -Dsonar.sources=src'
             }
             post {
                 always {
@@ -45,7 +46,7 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo 'Performing Security Scan...'
-                echo 'dependency-check.bat --project my_project --out . --scan ./src'
+                sh 'dependency-check.bat --project my_project --out . --scan ./src'
             }
             post {
                 always {
@@ -62,7 +63,7 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to Staging...'
-                echo 'Copy-Item target'
+                sh 'Copy-Item target' // Replace with actual deployment command
             }
             post {
                 always {
@@ -79,7 +80,7 @@ pipeline {
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running Integration Tests on Staging...'
-                echo 'Invoke-WebRequest -Uri http://staging-server/api/tests -UseBasicParsing'
+                sh 'Invoke-WebRequest -Uri http://staging-server/api/tests -UseBasicParsing'
             }
             post {
                 always {
@@ -96,7 +97,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to Production...'
-                echo 'Copy-Item target'
+                sh 'Copy-Item target' // Replace with actual production deployment command
             }
             post {
                 always {
@@ -135,5 +136,4 @@ pipeline {
             )
         }
     }
-}
 }
