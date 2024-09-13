@@ -1,21 +1,17 @@
 pipeline {
     agent any
 
-
     stages {
         stage('Test Email') {
             steps {
                 emailext(
-                    to: 'sevin.dinsara@gmail.com',
+                    to: 'dasankalana3@gmail.com',
                     subject: "Test Email from Jenkins",
                     body: "This is a test email to verify email functionality in the pipeline."
                 )
             }
         }
 
-        // Your other stages like 'Build', 'Unit and Integration Tests', etc.
-
-    stages {
         stage('Build') {
             steps {
                 echo 'Building the project.'
@@ -150,5 +146,4 @@ pipeline {
             )
         }
     }
-}
 }
